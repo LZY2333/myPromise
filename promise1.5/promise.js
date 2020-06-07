@@ -57,8 +57,8 @@ module.exports = Promise
 
 
 
-在promise异步的情况下，promise本身(或者说promise内用户传入的executor)是立即执行的，但executor函数内部结果的是异步返回的。
-而then方法是同步执行，因此比executor先执行完，所以then中传入的方法先保存起来，供executor回调调用。
-总结就是，异步情况下，不确定promise状态，先执行完then，储存then中的onFulfilled，onRejected函数，再供给executor异步返回结果确定状态后调用
-与 'mypromise1.0'中先执行完executor，确定promise状态，再执行then，根据状态决定执行哪个用户传入的函数相反。
+// 在promise异步的情况下，promise本身(或者说promise内用户传入的executor)是立即执行的，但executor函数内部结果的是异步返回的。
+// 而then方法是同步执行，因此比executor先执行完，所以then中传入的方法先保存起来，供executor回调调用。
+// 总结就是，异步情况下，不确定promise状态，先执行完then，储存then中的onFulfilled，onRejected函数，再供给executor异步返回结果确定状态后调用
+// 与 'mypromise1.0'中先执行完executor，确定promise状态，再执行then，根据状态决定执行哪个用户传入的函数相反。
 

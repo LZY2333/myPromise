@@ -3,7 +3,7 @@
 let fs = require('fs')
 
 function read(filename) {
-  return new Promise((resolve,reject) => {
+  return new Promise((resolve,reject) => {//包装一层promise的好处还有相当于做了错误处理
     fs.readFile(filename,'utf8',(err,data) => {
       if(err) reject(err)
       resolve(data)
@@ -11,7 +11,7 @@ function read(filename) {
   })
 }
 
-// 1.promise then中的回调不管是成功的回调还是失败的回调的return都会传给下一个.then的成功的回调函数
+// 1.promise then中的回调不管是成功的回调还是失败的回调的return都会传给下一个.then的成功的回调函数，也就是链式调用
 // read('./na1me.txt').then((data) => {// 这里故意写错进入第一层的reject
 //   return 'then1 [resolve] return.'//第一层resolve中正常的return会被下一层的then的resolve接受
 // },(err) => {
