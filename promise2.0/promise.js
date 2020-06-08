@@ -2,16 +2,6 @@ const RESOLVED = 'RESOLVED';
 const REJECTED = 'REJECTED';
 const PENDING = 'PENDING';
 
-
-
-
-
-
-const resolvePromise = (promise2, x, resolve, reject) => {
-    console.log(promise2, x, resolve, reject);
-}
-
-
 class Promise {
     constructor(executor) {
         this.status = PENDING;
@@ -145,9 +135,6 @@ const resolvePromise = (promise2, x, resolve, reject) => {
         resolve(x);
     }
 }
-
-
-
 
 module.exports = Promise
 
