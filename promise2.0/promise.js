@@ -2,16 +2,7 @@ const RESOLVED = 'RESOLVED';
 const REJECTED = 'REJECTED';
 const PENDING = 'PENDING';
 
-// let p = new Promise((resolve,reject) => {
-//     resolve(1)
-// }) 
-// let p2 = p.then(data => {
-//     return p2// 报错，因为这里promise p2的返回值还是p2，而resolvePromise方法内，
-//     //当onFulfilled/onRejected的返回值X是promise时，会执行返回的这个promise，再根据这个promise的返回值决定p2的状态
-//     //而这里返回值还是p2，p2的状态又由内部的p2决定，无限循环。所以当用户这样使用promise时会报错
-//     //所以我们自己写resolvePromise时，要针对返回值还是这个promise实例自己时，要识别并报错。
-// })
-// p2.then(() => {},() => {}) // 报错TypeError: Chaining cycle detected for promise #<Promise>
+
 
 
 
@@ -105,6 +96,59 @@ class Promise {
         })
     }
 }
+
+
+
+// resolvePromise 所有的promise都要坚持 bluebird q  es6-promise
+const resolvePromise = (promise2, x, resolve, reject) => {
+    // 1.循环引用 自己等待自己完成 错误的实现
+    // let p = new Promise((resolve,reject) => {
+    //     resolve(1)
+    // }) 
+    // let p2 = p.then(data => {
+    //     return p2// 报错，因为这里promise p2的返回值还是p2，而resolvePromise方法内，
+    //     //当onFulfilled/onRejected的返回值X是promise时，会执行返回的这个promise，再根据这个promise的返回值决定p2的状态
+    //     //而这里返回值还是p2，p2的状态又由内部的p2决定，无限循环。所以当用户这样使用promise时会报错
+    //     //所以我们自己写resolvePromise时，要针对返回值还是这个promise实例自己时，要识别并报错。
+    // })
+    // p2.then(() => {},() => {}) // 报错TypeError: Chaining cycle detected for promise #<Promise>
+    
+    if (promise2 === x) { // 用一个类型错误 结束掉promise
+        return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+    }
+    // 后续的条件要严格判断 保证代码能和别的库一起使用
+    let called;
+    if ((typeof x === 'object' && x != null) || typeof x === 'function') { // 有可能是一个promise
+        // 要继续判断
+        try {
+            let then = x.then;
+            if (typeof then === 'function') { // 只能认为是一个promise了
+                // 不要写成x.then  直接then.call就可以了 因为x.then 会再次取值
+                then.call(x, y => { // 根据promise的状态决定是成功还是失败
+                    if (called) return;
+                    called = true;
+                    resolvePromise(promise2, y, resolve, reject); // 递归解析的过程
+                }, e => {
+                    if (called) return;
+                    called = true;
+                    reject(e); // 只要失败就失败
+                });
+            } else { // {then:'23'}
+                resolve(x);
+            }
+        } catch (e) { // 防止失败了再次进入成功
+            if (called) return;
+            called = true;
+            reject(e); // 取值出错
+        }
+    } else {
+        resolve(x);
+    }
+}
+
+
+
+
 module.exports = Promise
 
 
@@ -129,7 +173,6 @@ module.exports = Promise
 //     then执行就是p2执行，p2立即执行，就是onFulfilled或onRejected立即执行，执行结果代表p2的状态为成功还是失败，
 //     根据p2的状态才执行了第二个.then方法，实现了链式调用，这就是 同步状态下 promise实现链式调用的原理!!!! 
 //     (异步状态差不多，只不过绕了一点弯，回头总结补上)
-
 
 //     p1的改变状态很简单易懂，执行器executor中调用了resolve p1就是resolve状态，调用了reject p1就是reject状态，
 //     用户自己会判断并在执行器中写好p1什么情况调用哪个，决定好p1的状态，从而决定第一个.then该调用onFulfilled还是onRejected
